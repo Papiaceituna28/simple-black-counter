@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contador Regresivo</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #000;
+            color: #fff;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .countdown-container {
+            text-align: center;
+        }
+
+        .countdown {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3rem;
+        }
+
+        .time {
+            margin: 0 0.5rem;
+            text-align: center;
+            width: 100px; /* Ancho fijo para cada contenedor */
+        }
+
+        .time span {
+            display: block;
+            font-size: 4rem;
+            font-weight: bold;
+            width: 100%; /* Asegura que el número ocupe todo el ancho */
+            text-align: center; /* Centra el número dentro del contenedor */
+        }
+
+        .label {
+            font-size: 1rem;
+            margin-top: 0.5rem;
+            color: #ccc;
+        }
+
+        .separator {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #fff;
+            margin: 0 0.5rem;
+        }
+
+        .date-input {
+            margin-top: 1rem;
+            padding: 0.5rem;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #333;
+            color: #fff;
+        }
+
+        .date-input::placeholder {
+            color: #999;
+        }
+
+        .toggle-date-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+        }
+
+        .toggle-date-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .date-input.hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="countdown-container">
+          <div id="timePrefix" style="font-size: 3.5rem; margin-bottom: 1.5rem; display: none;">Hace</div>
+        <div class="countdown">
+            <div class="time">
+                <span id="years">00</span>
+                <div class="label">años</div>
+            </div>
+            <span class="separator">:</span>
+            <div class="time">
+                <span id="months">00</span>
+                <div class="label">meses</div>
+            </div>
+            <span class="separator">:</span>
+            <div class="time">
+                <span id="days">00</span>
+                <div class="label">días</div>
+            </div>
+            <span class="separator">:</span>
+            <div class="time">
+                <span id="hours">00</span>
+                <div class="label">horas</div>
+            </div>
+            <span class="separator">:</span>
+            <div class="time">
+                <span id="minutes">00</span>
+                <div class="label">minutos</div>
+            </div>
+            <span class="separator">:</span>
+            <div class="time">
+                <span id="seconds">00</span>
+                <div class="label">segundos</div>
+            </div>
+            <span class="separator">:</span>
+            <div class="time">
+                <span id="milliseconds">00</span>
+                <div class="label">milisegundos</div>
+            </div>
+        </div>
+        <input
+            type="datetime-local"
+            id="targetDateInput"
+            class="date-input"
+            value="2028-03-11T00:00"
+        />
+        <button class="toggle-date-btn" id="toggleDateBtn">⚙️</button>
+    </div>
+    <script>
+        const pageLoadDate = new Date();
+        let targetDate = new Date('2028-03-11T00:00:00');
+        let interval;
+        let wasDateManuallySet = false;
+
+        function updateCountdown() {
+            const now = new Date();
+            const difference = targetDate - now;
+
+            // Si la fecha objetivo es anterior a la fecha de carga y fue establecida manualmente
+            if (targetDate < pageLoadDate && wasDateManuallySet) {
+                document.getElementById('timePrefix').style.display = 'block';
+                const reverseDifference = now - targetDate;
+                const years = Math.floor(reverseDifference / (1000 * 60 * 60 * 24 * 365));
+                const months = Math.floor((reverseDifference % (1000 * 60 * 60 * 24 * 365)) / (1000 * 60 * 60 * 24 * 30));
+                const days = Math.floor((reverseDifference % (1000 * 60 * 60 * 24 * 30)) / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((reverseDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((reverseDifference % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((reverseDifference % (1000 * 60)) / 1000);
+                const milliseconds = Math.floor(reverseDifference % 1000);
+
+                document.getElementById('years').textContent = String(years).padStart(2, '0');
+                document.getElementById('months').textContent = String(months).padStart(2, '0');
+                document.getElementById('days').textContent = String(days).padStart(2, '0');
+                document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+                document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+                document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+                document.getElementById('milliseconds').textContent = String(milliseconds).padStart(3, '0').slice(0, 2);
+            } else {
+                document.getElementById('timePrefix').style.display = 'none';
+                // Comportamiento normal del contador regresivo
+                if (difference < 0) {
+                    clearInterval(interval);
+                    document.querySelector('.countdown').textContent = "¡Tiempo terminado!";
+                    return;
+                }
+
+                const years = Math.floor(difference / (1000 * 60 * 60 * 24 * 365));
+                const months = Math.floor((difference % (1000 * 60 * 60 * 24 * 365)) / (1000 * 60 * 60 * 24 * 30));
+                const days = Math.floor((difference % (1000 * 60 * 60 * 24 * 30)) / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+                const milliseconds = Math.floor(difference % 1000);
+
+                document.getElementById('years').textContent = String(years).padStart(2, '0');
+                document.getElementById('months').textContent = String(months).padStart(2, '0');
+                document.getElementById('days').textContent = String(days).padStart(2, '0');
+                document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+                document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+                document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+                document.getElementById('milliseconds').textContent = String(milliseconds).padStart(3, '0').slice(0, 2);
+            }
+        }
+
+        document.getElementById('targetDateInput').addEventListener('change', function() {
+            targetDate = new Date(this.value);
+            wasDateManuallySet = true;
+            clearInterval(interval);
+            interval = setInterval(updateCountdown, 100);
+            updateCountdown(); // Llamar a la función una vez para inicializar
+        });
+
+        interval = setInterval(updateCountdown, 100);
+        updateCountdown(); // Llamar a la función una vez para inicializar
+
+        // Funcionalidad para mostrar/ocultar el selector de fecha
+        document.getElementById('toggleDateBtn').addEventListener('click', function() {
+            const dateInput = document.getElementById('targetDateInput');
+            dateInput.classList.toggle('hidden');
+        });
+    </script>
+</body>
+</html>
