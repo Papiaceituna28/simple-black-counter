@@ -319,7 +319,7 @@
         const LS_TARGET_DATE = "customTargetDate";
         const pageLoadDate = new Date();
         let storedDateValue = localStorage.getItem(LS_TARGET_DATE);
-        let targetDate = storedDateValue ? new Date(storedDateValue) : new Date('2028-03-11T00:00:00');
+        let targetDate = storedDateValue ? new Date(storedDateValue) : new Date('2026-01-01T00:00:00');
         let interval;
         let wasDateManuallySet = !!storedDateValue;
 
@@ -497,3 +497,4 @@
     </script>
 </body>
 </html>
+
