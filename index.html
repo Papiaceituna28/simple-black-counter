@@ -19,54 +19,55 @@
             background-color: #000;
             color: #fff;
             font-family: 'Arial', sans-serif;
+            transition: background 0.7s;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
         }
-
         .countdown-container {
             text-align: center;
             width: 100%;
-            max-width: 850px;
+            max-width: 1600px;
             padding: 2vh 1vw;
             box-sizing: border-box;
+            background: rgba(0,0,0,0.65);
+            border-radius: 18px;
         }
-
         .countdown {
             display: flex;
-            justify-content: center;
-            align-items: center;
             flex-wrap: wrap;
+            justify-content: center;
+            align-items: baseline;
             font-size: clamp(1.5rem, 7vw, 3.5rem);
+            word-break: break-word;
+            box-sizing: border-box;
+            gap: 0.2em;
         }
-
         .time {
-            margin: 0 clamp(0.2rem, 2vw, 0.5rem);
-            text-align: center;
-            width: clamp(55px, 11vw, 100px);
-            min-width: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 0.12em;
+            min-width: 48px;
+            max-width: 105px;
         }
-
-        .time span {
-            display: block;
+        .num,
+        .separator {
             font-size: clamp(2.8rem, 11vw, 4rem);
             font-weight: bold;
-            width: 100%;
+            line-height: 1.08;
             text-align: center;
         }
-
+        .separator {
+            margin: 0 0.08em;
+            color: #fff;
+        }
         .label {
             font-size: clamp(0.7rem, 3vw, 1rem);
-            margin-top: 0.5rem;
+            margin-top: 0.24em;
             color: #ccc;
         }
-
-        .separator {
-            font-size: clamp(2.5rem, 11vw, 4rem);
-            font-weight: bold;
-            color: #fff;
-            margin: 0 clamp(0.18rem,1vw,0.5rem);
-            user-select: none;
-        }
-
-        .date-input {
+        .date-input, .final-text-input {
             margin-top: 2vh;
             padding: 0.8em 0.5em;
             font-size: clamp(0.9rem, 3vw, 1.1rem);
@@ -77,16 +78,28 @@
             box-sizing: border-box;
             width: clamp(150px, 35vw, 300px);
             max-width: 100vw;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
         }
-        .date-input::placeholder {
-            color: #999;
+        .final-text-input {
+            margin-top: 1vh;
+            resize: none;
+            height: 2.3em;
+            min-height: unset;
+            max-height: unset;
+            line-height: 1.12;
+            font-size: clamp(0.96rem,3vw,1.04rem);
+            padding-top: 0.2em;
+            padding-bottom: 0.2em;
         }
+        .final-text-input,
+        .final-text-input:focus {
+            outline: none;
+        }
+        .date-input::placeholder, .final-text-input::placeholder { color: #999; }
         .toggle-date-btn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 45px;
-            height: 45px;
+            position: fixed; bottom: 20px; right: 20px; width: 45px; height: 45px;
             border-radius: 50%;
             background-color: rgba(255, 255, 255, 0.1);
             border: none;
@@ -103,11 +116,49 @@
             background-color: rgba(255, 255, 255, 0.2);
             color: rgba(255, 255, 255, 0.8);
         }
-        .date-input.hidden {
-            display: none;
+        .bug-btn,
+        .change-bg-btn {
+            position: fixed;
+            right: 20px;
+            border: none;
+            border-radius: 8px;
+            padding: 0.6em 1.2em;
+            font-size: 1rem;
+            color: #fff;
+            background: #4B1818; /* Un rojo oscuro más fuerte */
+            box-shadow: 0 2px 8px #0005;
+            z-index: 10;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.45em;
+            transition: background 0.3s, color 0.2s;
         }
-
-        /* Byline in lower left */
+        .change-bg-btn {
+            background: rgba(52,52,52,0.84);
+            bottom: 80px;
+            color: #eee;
+        }
+        .change-bg-btn:hover {
+            background: rgba(90,90,90,0.95);
+            color: #f7ea9b;
+        }
+        .bug-btn {
+            bottom: 140px;
+            background: #4B1818;
+            color: #fff;
+        }
+        .bug-btn:hover {
+            background: #9b1c23;
+            color: #fff;
+        }
+        .date-input.hidden,
+        .final-text-input.hidden,
+        .bg-options.hidden,
+        .change-bg-btn.hidden,
+        .bug-btn.hidden {
+            display: none !important;
+        }
         .byline {
             position: fixed;
             left: 18px;
@@ -128,28 +179,67 @@
             color: #fff;
             text-decoration: underline;
         }
-
-        /* Responsive tweaks for particularly small screens */
+        .bg-options {
+            position: fixed;
+            right: 20px;
+            bottom: 200px;
+            background: #232323ee;
+            padding: 1.4em 1.2em 1.4em 1.2em;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75em;
+            box-shadow: 0 2px 18px #0009;
+            z-index: 100;
+            min-width: 210px;
+        }
+        .bg-options label {
+            color: #e6e6e6;
+            font-size: 1rem;
+            margin-bottom: 0.19em;
+        }
+        .bg-options input[type="text"] {
+            border: 1px solid #555;
+            padding: 0.4em;
+            border-radius: 5px;
+            font-size: 1rem;
+            background: #181818;
+            color: #fff;
+        }
+        .bg-options input[type="file"] {
+            color: #fff;
+        }
+        .bg-options .bg-btns {
+            margin-top: 0.8em;
+            display: flex;
+            gap: 0.6em;
+        }
+        .bg-options button {
+            border: none;
+            border-radius: 5px;
+            padding: 0.45em 1.1em;
+            font-size: 1rem;
+            background: #3d3d3d;
+            color: #eee;
+            cursor: pointer;
+            transition: background 0.22s;
+        }
+        .bg-options button:hover {
+            background: #67676a;
+            color: #fafafa;
+        }
+        .bg-options small {
+            color: #bdbdbd;
+            font-size: 0.85em;
+        }
         @media (max-width: 480px) {
-            .countdown-container {
-                max-width: 100vw;
-                padding: 1vh 0.5vw;
-            }
-            .toggle-date-btn {
-                right: 10px;
-                bottom: 10px;
-                width: 38px;
-                height: 38px;
-                font-size: 1rem;
-            }
-            .byline {
-                left: 7px;
-                bottom: 7px;
-                font-size: 0.8rem;
-            }
-            .date-input {
-                font-size: 0.99rem;
-            }
+            .countdown-container { max-width: 100vw; padding: 1vh 0.5vw; }
+            .toggle-date-btn { right: 10px; bottom: 10px; width: 38px; height: 38px; font-size: 1rem; }
+            .change-bg-btn { bottom: 60px; right: 10px; font-size: 0.92rem; padding: 0.5em 0.7em; }
+            .bug-btn { bottom: 110px; right: 10px; font-size: 0.92rem; padding: 0.5em 0.7em; }
+            .bg-options { right: 7px; bottom: 140px; min-width: 140px; padding: 1em 0.55em 1em 0.55em; }
+            .byline { left: 7px; bottom: 7px; font-size: 0.8rem; }
+            .date-input, .final-text-input { font-size: 0.99rem; }
         }
     </style>
 </head>
@@ -158,62 +248,89 @@
         <div id="timePrefix" style="font-size: clamp(1.5rem, 7vw, 3.5rem); margin-bottom: 1.5rem; display: none;">Hace</div>
         <div class="countdown">
             <div class="time">
-                <span id="years">00</span>
+                <span class="num" id="years">00</span>
                 <div class="label">años</div>
             </div>
             <span class="separator">:</span>
             <div class="time">
-                <span id="months">00</span>
+                <span class="num" id="months">00</span>
                 <div class="label">meses</div>
             </div>
             <span class="separator">:</span>
             <div class="time">
-                <span id="days">00</span>
+                <span class="num" id="days">00</span>
                 <div class="label">días</div>
             </div>
             <span class="separator">:</span>
             <div class="time">
-                <span id="hours">00</span>
+                <span class="num" id="hours">00</span>
                 <div class="label">horas</div>
             </div>
             <span class="separator">:</span>
             <div class="time">
-                <span id="minutes">00</span>
+                <span class="num" id="minutes">00</span>
                 <div class="label">minutos</div>
             </div>
             <span class="separator">:</span>
             <div class="time">
-                <span id="seconds">00</span>
+                <span class="num" id="seconds">00</span>
                 <div class="label">segundos</div>
             </div>
             <span class="separator">:</span>
             <div class="time">
-                <span id="milliseconds">00</span>
+                <span class="num" id="milliseconds">00</span>
                 <div class="label">milisegundos</div>
             </div>
         </div>
-        <input
-            type="datetime-local"
-            id="targetDateInput"
-            class="date-input"
-            value="2028-03-11T00:00"
+        <input type="datetime-local" id="targetDateInput" class="date-input hidden" value="2028-03-11T00:00" />
+        <input 
+            type="text"
+            id="finalTextInput"
+            class="final-text-input hidden"
+            maxlength="120"
+            spellcheck="true"
+            placeholder="Texto al finalizar el contador (por defecto: ¡Tiempo terminado!)"
+            autocomplete="off"
         />
         <button class="toggle-date-btn" id="toggleDateBtn" title="Mostrar/ocultar selector de fecha">⚙️</button>
+        <button class="change-bg-btn hidden" id="changeBgBtn" title="Cambiar fondo">🖼️ Fondo</button>
+        <a href="https://github.com/Papiaceituna28/simple-black-counter/pulls" id="bugBtn" class="bug-btn hidden" title="Reportar bug" target="_blank" rel="noopener">
+            <span aria-hidden="true">🐞</span>
+            <span style="font-size:0.97em;">Reportar bug</span>
+        </a>
+        <div class="bg-options hidden" id="bgOptions">
+            <label for="bgUrl">Fondo desde enlace (url):</label>
+            <input type="text" id="bgUrl" placeholder="https://ejemplo.com/fondo.jpg">
+            <label for="bgFile" style="margin-top: 0.8em;">o desde tu equipo:</label>
+            <input type="file" id="bgFile" accept="image/*">
+            <div class="bg-btns">
+                <button id="applyBgBtn">Aplicar</button>
+                <button id="clearBgBtn" type="button">Quitar fondo</button>
+            </div>
+            <small>El fondo se guardará y se mantendrá al volver a abrir la página.</small>
+        </div>
     </div>
     <div class="byline">
         By <a href="https://github.com/Papiaceituna28" target="_blank" rel="noopener noreferrer">Papiaceituna</a>
     </div>
     <script>
+        // ------ CONTADOR ------
+        const LS_FINAL_TEXT = "customFinalText";
+        const LS_TARGET_DATE = "customTargetDate";
         const pageLoadDate = new Date();
-        let targetDate = new Date('2028-03-11T00:00:00');
+        let storedDateValue = localStorage.getItem(LS_TARGET_DATE);
+        let targetDate = storedDateValue ? new Date(storedDateValue) : new Date('2028-03-11T00:00:00');
         let interval;
-        let wasDateManuallySet = false;
+        let wasDateManuallySet = !!storedDateValue;
+
+        const defaultFinalText = "¡Tiempo terminado!";
+        let finalCountdownText = localStorage.getItem(LS_FINAL_TEXT) || defaultFinalText;
+        const finalTextInput = document.getElementById('finalTextInput');
+        finalTextInput.value = localStorage.getItem(LS_FINAL_TEXT) || "";
 
         function updateCountdown() {
             const now = new Date();
             const difference = targetDate - now;
-
-            // Si la fecha objetivo es anterior a la fecha de carga y fue establecida manualmente
             if (targetDate < pageLoadDate && wasDateManuallySet) {
                 document.getElementById('timePrefix').style.display = 'block';
                 const reverseDifference = now - targetDate;
@@ -224,7 +341,6 @@
                 const minutes = Math.floor((reverseDifference % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((reverseDifference % (1000 * 60)) / 1000);
                 const milliseconds = Math.floor(reverseDifference % 1000);
-
                 document.getElementById('years').textContent = String(years).padStart(2, '0');
                 document.getElementById('months').textContent = String(months).padStart(2, '0');
                 document.getElementById('days').textContent = String(days).padStart(2, '0');
@@ -234,13 +350,11 @@
                 document.getElementById('milliseconds').textContent = String(milliseconds).padStart(3, '0').slice(0, 2);
             } else {
                 document.getElementById('timePrefix').style.display = 'none';
-                // Comportamiento normal del contador regresivo
                 if (difference < 0) {
                     clearInterval(interval);
-                    document.querySelector('.countdown').textContent = "¡Tiempo terminado!";
+                    document.querySelector('.countdown').textContent = finalCountdownText || defaultFinalText;
                     return;
                 }
-
                 const years = Math.floor(difference / (1000 * 60 * 60 * 24 * 365));
                 const months = Math.floor((difference % (1000 * 60 * 60 * 24 * 365)) / (1000 * 60 * 60 * 24 * 30));
                 const days = Math.floor((difference % (1000 * 60 * 60 * 24 * 30)) / (1000 * 60 * 60 * 24));
@@ -248,7 +362,6 @@
                 const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((difference % (1000 * 60)) / 1000);
                 const milliseconds = Math.floor(difference % 1000);
-
                 document.getElementById('years').textContent = String(years).padStart(2, '0');
                 document.getElementById('months').textContent = String(months).padStart(2, '0');
                 document.getElementById('days').textContent = String(days).padStart(2, '0');
@@ -258,23 +371,129 @@
                 document.getElementById('milliseconds').textContent = String(milliseconds).padStart(3, '0').slice(0, 2);
             }
         }
-
-        document.getElementById('targetDateInput').addEventListener('change', function() {
+        const targetDateInput = document.getElementById('targetDateInput');
+        if (storedDateValue) {
+            targetDateInput.value = (function(date){
+                const pad = v=>String(v).padStart(2,"0");
+                return date.getFullYear()+"-"+pad(date.getMonth()+1)+"-"+pad(date.getDate())+"T"+pad(date.getHours())+":"+pad(date.getMinutes());
+            })(targetDate);
+        }
+        targetDateInput.addEventListener('change', function() {
             targetDate = new Date(this.value);
             wasDateManuallySet = true;
+            localStorage.setItem("customTargetDate", this.value);
             clearInterval(interval);
             interval = setInterval(updateCountdown, 100);
-            updateCountdown(); // Llamar a la función una vez para inicializar
+            updateCountdown();
         });
-
+        finalTextInput.addEventListener('input', function() {
+            finalCountdownText = this.value.trim() || defaultFinalText;
+            localStorage.setItem("customFinalText", this.value.trim());
+        });
         interval = setInterval(updateCountdown, 100);
-        updateCountdown(); // Llamar a la función una vez para inicializar
+        updateCountdown();
 
-        // Funcionalidad para mostrar/ocultar el selector de fecha
-        document.getElementById('toggleDateBtn').addEventListener('click', function() {
-            const dateInput = document.getElementById('targetDateInput');
-            dateInput.classList.toggle('hidden');
+        // ---- MENÚ FECHA, BOTÓN FONDO Y BUG ----
+        const toggleBtn = document.getElementById('toggleDateBtn');
+        const changeBgBtn = document.getElementById('changeBgBtn');
+        const bugBtn = document.getElementById('bugBtn');
+        targetDateInput.classList.add('hidden');
+        changeBgBtn.classList.add('hidden');
+        bugBtn.classList.add('hidden');
+        finalTextInput.classList.add('hidden');
+        toggleBtn.addEventListener('click', function() {
+            const isNowShown = targetDateInput.classList.toggle('hidden') === false;
+            if (isNowShown) {
+                changeBgBtn.classList.remove('hidden');
+                bugBtn.classList.remove('hidden');
+                finalTextInput.classList.remove('hidden');
+            } else {
+                changeBgBtn.classList.add('hidden');
+                bugBtn.classList.add('hidden');
+                finalTextInput.classList.add('hidden');
+                document.getElementById('bgOptions').classList.add('hidden');
+            }
         });
+
+        // ------- FONDO PERSONALIZADO -------
+        const bgOptions = document.getElementById('bgOptions');
+        const applyBgBtn = document.getElementById('applyBgBtn');
+        const clearBgBtn = document.getElementById('clearBgBtn');
+        const bgUrlInput = document.getElementById('bgUrl');
+        const bgFileInput = document.getElementById('bgFile');
+        function setBodyBackground(bgData) {
+            if (bgData) {
+                document.body.style.backgroundImage =  bgData.startsWith('url(') || bgData.startsWith('linear-gradient(')
+                    ? bgData
+                    : 'url("' + bgData + '")';
+            } else {
+                document.body.style.backgroundImage = '';
+            }
+        }
+        function restoreBackground() {
+            const localBgType = localStorage.getItem('customBackgroundType') || '';
+            const localBg = localStorage.getItem('customBackground');
+            if (localBg) {
+                if (localBgType === 'file') {
+                    setBodyBackground(localBg);
+                } else if (localBgType === 'url') {
+                    setBodyBackground(localBg);
+                }
+            }
+        }
+        restoreBackground();
+        changeBgBtn.addEventListener('click', function(e) {
+            bgOptions.classList.toggle('hidden');
+            e.stopPropagation();
+        });
+        applyBgBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const url = bgUrlInput.value.trim();
+            const file = bgFileInput.files[0];
+            if (url.length > 6 && (url.startsWith('http://') || url.startsWith('https://'))) {
+                setBodyBackground(url);
+                localStorage.setItem('customBackgroundType', 'url');
+                localStorage.setItem('customBackground', url);
+                bgOptions.classList.add('hidden');
+                bgFileInput.value = '';
+                return;
+            }
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    const dataUrl = ev.target.result;
+                    setBodyBackground(dataUrl);
+                    localStorage.setItem('customBackgroundType', 'file');
+                    localStorage.setItem('customBackground', dataUrl);
+                    bgOptions.classList.add('hidden');
+                    bgUrlInput.value = '';
+                };
+                reader.readAsDataURL(file);
+                return;
+            }
+            alert("Por favor, ingresa un enlace a una imagen válido (con http o https) o selecciona una imagen desde tu dispositivo.");
+        });
+        clearBgBtn.addEventListener('click', function() {
+            localStorage.removeItem('customBackground');
+            localStorage.removeItem('customBackgroundType');
+            setBodyBackground('');
+            bgOptions.classList.add('hidden');
+            bgUrlInput.value = '';
+            bgFileInput.value = '';
+        });
+        document.addEventListener('click', (event) => {
+            if (
+                !bgOptions.classList.contains('hidden') &&
+                !bgOptions.contains(event.target) &&
+                event.target !== changeBgBtn
+            ) {
+                bgOptions.classList.add('hidden');
+            }
+        });
+        bgOptions.addEventListener('click', (e) => e.stopPropagation());
+        changeBgBtn.addEventListener('click', (e) => e.stopPropagation());
+        bgUrlInput.addEventListener('input', ()=>bgFileInput.value='');
+        bgFileInput.addEventListener('input', ()=>bgUrlInput.value='');
     </script>
 </body>
 </html>
