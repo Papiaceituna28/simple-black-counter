@@ -289,7 +289,7 @@
             class="final-text-input hidden"
             maxlength="120"
             spellcheck="true"
-            placeholder="Texto al finalizar el contador (por defecto: ¡Tiempo terminado!)"
+            placeholder="Texto al finalizar el contador"
             autocomplete="off"
         />
         <button class="toggle-date-btn" id="toggleDateBtn" title="Mostrar/ocultar selector de fecha">⚙️</button>
@@ -323,7 +323,7 @@
         let interval;
         let wasDateManuallySet = !!storedDateValue;
 
-        const defaultFinalText = "¡Tiempo terminado!";
+        const defaultFinalText = "¡Feliz Año Nuevo!";
         let finalCountdownText = localStorage.getItem(LS_FINAL_TEXT) || defaultFinalText;
         const finalTextInput = document.getElementById('finalTextInput');
         finalTextInput.value = localStorage.getItem(LS_FINAL_TEXT) || "";
@@ -497,4 +497,5 @@
     </script>
 </body>
 </html>
+
 
