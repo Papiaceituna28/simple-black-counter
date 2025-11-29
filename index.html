@@ -209,6 +209,70 @@
         .bg-options input[type="file"] {
             color: #fff;
         }
+        /* --- MINIATURAS DE FONDO --- */
+        .bg-previews-grid {
+            display: flex;
+            flex-direction: row;
+            gap: 0.5em;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 0.7em;
+            flex-wrap: wrap;
+        }
+        .bg-preview-btn {
+            border: 2px solid transparent;
+            cursor: pointer;
+            padding: 0;
+            border-radius: 7px;
+            outline: none;
+            transition: border-color 0.2s;
+            background: none;
+            width: 50px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .bg-preview-btn.selected {
+            border: 2px solid #fff48b;
+        }
+        .bg-preview-img {
+            width: 46px;
+            height: 34px;
+            object-fit: cover;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px #0008;
+        }
+        .bg-solid-btn {
+            width: 46px;
+            height: 34px;
+            border-radius: 5px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            display: inline-block;
+            margin: 0;
+            background: #222;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .bg-solid-btn.selected {
+            border-color: #fff48b;
+        }
+        .bg-solid-btn .color-sample {
+            display: block;
+            width: 100%;
+            height: 100%;
+            border-radius: 5px;
+        }
+        .color-picker {
+            margin-left: 0.4em;
+            border: none;
+            padding: 0;
+            background: none;
+            width: 44px;
+            height: 32px;
+            cursor: pointer;
+            vertical-align: middle;
+        }
         .bg-options .bg-btns {
             margin-top: 0.8em;
             display: flex;
@@ -240,6 +304,8 @@
             .bg-options { right: 7px; bottom: 140px; min-width: 140px; padding: 1em 0.55em 1em 0.55em; }
             .byline { left: 7px; bottom: 7px; font-size: 0.8rem; }
             .date-input, .final-text-input { font-size: 0.99rem; }
+            .bg-preview-btn, .bg-solid-btn { width: 33px; height: 28px; }
+            .bg-preview-img { width: 29px; height: 23px; }
         }
     </style>
 </head>
@@ -299,6 +365,18 @@
             <span style="font-size:0.97em;">Reportar bug</span>
         </a>
         <div class="bg-options hidden" id="bgOptions">
+            <label style="margin-bottom: 0.4em;">Imágenes predeterminadas:</label>
+            <div class="bg-previews-grid" id="bgPreviewsGrid">
+                <button class="bg-preview-btn" type="button" data-bg='pictures/1.webp' title="Fondo 1"><img src="pictures/1.webp" class="bg-preview-img" alt="1"/></button>
+                <button class="bg-preview-btn" type="button" data-bg='pictures/2.webp' title="Fondo 2"><img src="pictures/2.webp" class="bg-preview-img" alt="2"/></button>
+                <button class="bg-preview-btn" type="button" data-bg='pictures/3.webp' title="Fondo 3"><img src="pictures/3.webp" class="bg-preview-img" alt="3"/></button>
+                <button class="bg-preview-btn" type="button" data-bg='pictures/4.webp' title="Fondo 4"><img src="pictures/4.webp" class="bg-preview-img" alt="4"/></button>
+                <!-- Colores sólidos: botón más icono -->
+                <button class="bg-solid-btn" type="button" id="bgSolidBtn" title="Seleccionar color sólido">
+                    <span class="color-sample" id="colorSample" style="background: #222;"></span>
+                </button>
+                <input type="color" id="colorPicker" class="color-picker" title="Elige color" value="#232323" />
+            </div>
             <label for="bgUrl">Fondo desde enlace (url):</label>
             <input type="text" id="bgUrl" placeholder="https://ejemplo.com/fondo.jpg">
             <label for="bgFile" style="margin-top: 0.8em;">o desde tu equipo:</label>
@@ -421,24 +499,41 @@
         const clearBgBtn = document.getElementById('clearBgBtn');
         const bgUrlInput = document.getElementById('bgUrl');
         const bgFileInput = document.getElementById('bgFile');
-        function setBodyBackground(bgData) {
-            if (bgData) {
+        // Agregados para preview y color sólido
+        const bgPreviewsGrid = document.getElementById('bgPreviewsGrid');
+        const colorPicker = document.getElementById('colorPicker');
+        const bgSolidBtn = document.getElementById('bgSolidBtn');
+        const colorSample = document.getElementById('colorSample');
+        let selectedPreviewBtn = null;
+        let selectedColor = colorPicker.value;
+
+        function setBodyBackground(bgData, type = "") {
+            if (type === "solid") {
+                document.body.style.backgroundImage = "none";
+                document.body.style.backgroundColor = bgData;
+            } else if (bgData) {
                 document.body.style.backgroundImage =  bgData.startsWith('url(') || bgData.startsWith('linear-gradient(')
                     ? bgData
                     : 'url("' + bgData + '")';
+                document.body.style.backgroundColor = "#000"; // fallback
             } else {
                 document.body.style.backgroundImage = '';
+                document.body.style.backgroundColor = "#000";
             }
         }
         function restoreBackground() {
             const localBgType = localStorage.getItem('customBackgroundType') || '';
             const localBg = localStorage.getItem('customBackground');
             if (localBg) {
-                if (localBgType === 'file') {
+                if (localBgType === 'file' || localBgType === 'url') {
                     setBodyBackground(localBg);
-                } else if (localBgType === 'url') {
-                    setBodyBackground(localBg);
+                } else if (localBgType === 'solid') {
+                    setBodyBackground(localBg, 'solid');
+                    if (colorSample) colorSample.style.background = localBg;
+                    if (colorPicker) colorPicker.value = localBg;
                 }
+            } else {
+                setBodyBackground('');
             }
         }
         restoreBackground();
@@ -448,14 +543,31 @@
         });
         applyBgBtn.addEventListener('click', function(e) {
             e.preventDefault();
+            // Revisa la preselección: imagen predeterminada, color sólido
+            if (selectedPreviewBtn && selectedPreviewBtn.classList.contains('bg-preview-btn')) {
+                const src = selectedPreviewBtn.getAttribute('data-bg');
+                setBodyBackground(src);
+                localStorage.setItem('customBackgroundType', 'url');
+                localStorage.setItem('customBackground', src);
+                // NO cerramos bgOptions aquí
+                return;
+            }
+            // Si eligió color sólido
+            if (selectedPreviewBtn && selectedPreviewBtn.classList.contains('bg-solid-btn')) {
+                setBodyBackground(selectedColor, "solid");
+                localStorage.setItem('customBackgroundType', 'solid');
+                localStorage.setItem('customBackground', selectedColor);
+                return;
+            }
+            // Por URL:
             const url = bgUrlInput.value.trim();
             const file = bgFileInput.files[0];
             if (url.length > 6 && (url.startsWith('http://') || url.startsWith('https://'))) {
                 setBodyBackground(url);
                 localStorage.setItem('customBackgroundType', 'url');
                 localStorage.setItem('customBackground', url);
-                bgOptions.classList.add('hidden');
                 bgFileInput.value = '';
+                // NO cerramos bgOptions aquí
                 return;
             }
             if (file) {
@@ -465,22 +577,93 @@
                     setBodyBackground(dataUrl);
                     localStorage.setItem('customBackgroundType', 'file');
                     localStorage.setItem('customBackground', dataUrl);
-                    bgOptions.classList.add('hidden');
                     bgUrlInput.value = '';
                 };
                 reader.readAsDataURL(file);
                 return;
             }
-            alert("Por favor, ingresa un enlace a una imagen válido (con http o https) o selecciona una imagen desde tu dispositivo.");
+            alert("Por favor, selecciona un fondo de la parte superior, un colór sólido, pon una url o selecciona una imagen del dispositivo.");
         });
         clearBgBtn.addEventListener('click', function() {
             localStorage.removeItem('customBackground');
             localStorage.removeItem('customBackgroundType');
             setBodyBackground('');
-            bgOptions.classList.add('hidden');
             bgUrlInput.value = '';
             bgFileInput.value = '';
+            [...bgPreviewsGrid.querySelectorAll('.selected')].forEach(el=>el.classList.remove('selected'));
         });
+
+        // --- MINIATURAS Y COLOR SÓLIDO ---
+        // Selección mutua de preview
+        bgPreviewsGrid.addEventListener('click', function(e) {
+            let btn = e.target;
+            // Puede que clickés en la img, busca botón padre
+            if (btn.classList && !btn.classList.contains('bg-preview-btn') && !btn.classList.contains('bg-solid-btn')) {
+                btn = btn.closest('.bg-preview-btn,.bg-solid-btn');
+            }
+            if (!btn || !(btn.classList.contains('bg-preview-btn') || btn.classList.contains('bg-solid-btn'))) return;
+            [...bgPreviewsGrid.querySelectorAll('.selected')].forEach(el=>el.classList.remove('selected'));
+            btn.classList.add('selected');
+            selectedPreviewBtn = btn;
+            // Si color sólido, marca color actualizado
+            if (btn.classList.contains('bg-solid-btn')) {
+                colorSample.style.background = colorPicker.value;
+            }
+        });
+        // Maneja el colorPicker en color sólido
+        colorPicker.addEventListener('input', function(e) {
+            selectedColor = e.target.value;
+            colorSample.style.background = selectedColor;
+            // Si está seleccionado colór sólido, actualiza en vivo
+            if (selectedPreviewBtn && selectedPreviewBtn.classList.contains('bg-solid-btn')) {
+                setBodyBackground(selectedColor, "solid");
+                localStorage.setItem('customBackgroundType', 'solid');
+                localStorage.setItem('customBackground', selectedColor);
+            }
+        });
+        // Elige colór sólido programático, selecciona su botón al cambiar color
+        colorPicker.addEventListener('click', function(e) {
+            if (!selectedPreviewBtn || !selectedPreviewBtn.classList.contains('bg-solid-btn')) {
+                [...bgPreviewsGrid.querySelectorAll('.selected')].forEach(el=>el.classList.remove('selected'));
+                bgSolidBtn.classList.add('selected');
+                selectedPreviewBtn = bgSolidBtn;
+            }
+        });
+
+        // Seleccionar color sólido al clickear el botón (no el picker)
+        bgSolidBtn.addEventListener('click', function(e) {
+            // Selecciona color actual
+            [...bgPreviewsGrid.querySelectorAll('.selected')].forEach(el=>el.classList.remove('selected'));
+            bgSolidBtn.classList.add('selected');
+            selectedPreviewBtn = bgSolidBtn;
+            colorPicker.focus();
+        });
+
+        // Si elegimos miniatura, quita file/url/inputs para evitar mezcla
+        bgPreviewsGrid.addEventListener('click', function(e) {
+            let btn = e.target;
+            if (btn.classList && !btn.classList.contains('bg-preview-btn') && !btn.classList.contains('bg-solid-btn')) {
+                btn = btn.closest('.bg-preview-btn,.bg-solid-btn');
+            }
+            if (btn && btn.classList.contains('bg-preview-btn')) {
+                bgUrlInput.value = "";
+                bgFileInput.value = "";
+            } else if (btn && btn.classList.contains('bg-solid-btn')) {
+                bgUrlInput.value = "";
+                bgFileInput.value = "";
+            }
+        });
+
+        // Si comienzas a llenar url o file, deselecciona miniaturas y color
+        bgUrlInput.addEventListener('input', () => {
+            [...bgPreviewsGrid.querySelectorAll('.selected')].forEach(el=>el.classList.remove('selected'));
+            selectedPreviewBtn = null;
+        });
+        bgFileInput.addEventListener('input', () => {
+            [...bgPreviewsGrid.querySelectorAll('.selected')].forEach(el=>el.classList.remove('selected'));
+            selectedPreviewBtn = null;
+        });
+
         document.addEventListener('click', (event) => {
             if (
                 !bgOptions.classList.contains('hidden') &&
@@ -488,14 +671,26 @@
                 event.target !== changeBgBtn
             ) {
                 bgOptions.classList.add('hidden');
+                // Deselecciona el preview
+                [...bgPreviewsGrid.querySelectorAll('.selected')].forEach(el=>el.classList.remove('selected'));
+                selectedPreviewBtn = null;
             }
         });
         bgOptions.addEventListener('click', (e) => e.stopPropagation());
         changeBgBtn.addEventListener('click', (e) => e.stopPropagation());
         bgUrlInput.addEventListener('input', ()=>bgFileInput.value='');
         bgFileInput.addEventListener('input', ()=>bgUrlInput.value='');
+
+        // Automatic restore de selección previa de color sólido
+        if (localStorage.getItem('customBackgroundType') === 'solid') {
+            bgSolidBtn.classList.add('selected');
+            selectedPreviewBtn = bgSolidBtn;
+            if (localStorage.getItem('customBackground')) {
+                colorPicker.value = localStorage.getItem('customBackground');
+                colorSample.style.background = colorPicker.value;
+                selectedColor = colorPicker.value;
+            }
+        }
     </script>
 </body>
 </html>
-
-
