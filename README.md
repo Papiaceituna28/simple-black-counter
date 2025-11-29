@@ -6,8 +6,12 @@ Permite seleccionar una fecha y hora objetivo, y muestra el tiempo restante en a
 ## ¿Cómo usar?
 
 1. Abre el sitio en tu navegador.
-2. Selecciona la fecha y hora a la que quieres hacer la cuenta regresiva.
-3. El contador se actualizará automáticamente mostrando el tiempo restante.
+2. Selecciona El Botón Inferior Derecho
+3. Selecciona la fecha y hora a la que quieres hacer la cuenta regresiva.
+4. Cambia el Fondo.
+5. Agrégale un texto al finalizar el tiempo.
+6. El contador se actualizará automáticamente
+7. mostrando el tiempo restante.
 
 ---
 
