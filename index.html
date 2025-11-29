@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contador Regresivo</title>
+    <title>Contador Simple Y Elegante /title>
     <style>
         html, body {
             height: 100%;
@@ -289,7 +289,7 @@
             class="final-text-input hidden"
             maxlength="120"
             spellcheck="true"
-            placeholder="Texto al finalizar el contador (por defecto: ¡Tiempo terminado!)"
+            placeholder="Texto al finalizar el contador"
             autocomplete="off"
         />
         <button class="toggle-date-btn" id="toggleDateBtn" title="Mostrar/ocultar selector de fecha">⚙️</button>
@@ -319,7 +319,7 @@
         const LS_TARGET_DATE = "customTargetDate";
         const pageLoadDate = new Date();
         let storedDateValue = localStorage.getItem(LS_TARGET_DATE);
-        let targetDate = storedDateValue ? new Date(storedDateValue) : new Date('2028-03-11T00:00:00');
+        let targetDate = storedDateValue ? new Date(storedDateValue) : new Date('2026-01-01T00:00:00');
         let interval;
         let wasDateManuallySet = !!storedDateValue;
 
@@ -497,3 +497,4 @@
     </script>
 </body>
 </html>
+
