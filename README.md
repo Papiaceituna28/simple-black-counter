@@ -1,4 +1,4 @@
-# Simple Black Counter
+# Simple Counter
 
 Este proyecto es un contador sencillo y oscuro regresivo y progresivo hecho en HTML, CSS y JavaScript.  
 Permite seleccionar una fecha y hora objetivo, y muestra el tiempo restante en años, meses, días, horas, minutos, segundos y milisegundos, todo con un diseño oscuro y minimalista.
