@@ -366,7 +366,7 @@
                 <div class="label">milisegundos</div>
             </div>
         </div>
-        <input type="datetime-local" id="targetDateInput" class="date-input hidden" value="2028-03-11T00:00" />
+        <input type="datetime-local" id="targetDateInput" class="date-input hidden" value="2026-01-01T00:00" />
         <input 
             type="text"
             id="finalTextInput"
@@ -720,7 +720,6 @@
 
 
         // =========== NIEVE ===============
-        // Sección de nieve, canvas en el fondo
         const snowCanvas = document.getElementById('snow-canvas');
         let snowAnimationActive = true; // Predeterminado activo
         const snowDefault = (localStorage.getItem(LS_SNOW) === null) ? true : (localStorage.getItem(LS_SNOW) === "true");
@@ -728,7 +727,6 @@
         let snowCtx = null;
         let snowW = 0;
         let snowH = 0;
-        // Checkbox UI
         const snowToggle = document.getElementById('snowToggle');
         snowToggle.checked = snowDefault;
 
@@ -738,22 +736,44 @@
             snowCanvas.width = snowW;
             snowCanvas.height = snowH;
         }
+
+        function getSnowflakeCount() {
+            // Aumenta base y ajusta también a pantallas pequeñas
+            // 70 copos por cada 1000px de ancho, con mínimo 70: set upper at 400
+            const base = Math.max(70, Math.floor(snowW * snowH / 4000));
+            return Math.min(400, base);
+        }
+
+        function getSnowflakeRadiusPx() {
+            // Tamaño relativo a la pantalla (vmin).
+            // Entre 0.7vw y 2.6vw, pero ajusta con min/max.
+            const minVmin = Math.min(snowW, snowH);
+            // Tamaño mínimo y máximo de copo en px
+            const minSize = Math.max(1, Math.round(minVmin * 0.006));
+            const maxSize = Math.max(minSize + 1, Math.round(minVmin * 0.022));
+            return [minSize, maxSize];
+        }
+
         function createSnowflakes() {
-            const N = Math.floor(snowW / 12); // number depends on screen size
+            const N = getSnowflakeCount();
+            const [minR, maxR] = getSnowflakeRadiusPx();
             snowflakes.length = 0;
             for(let i = 0; i < N; ++i) {
+                // Más copos y tamaños proporcionales a la pantalla
+                const r = Math.random() * (maxR-minR) + minR;
                 snowflakes.push({
                     x: Math.random() * snowW,
                     y: Math.random() * snowH,
-                    r: Math.random() * 1.9 + 0.9, // radius
-                    d: Math.random() * 0.5 + 0.6, // density/speed factor
-                    vx: (Math.random()-0.5) * 0.55,
+                    r: r, // radius en px
+                    d: Math.random() * 0.7 + 0.9, // densidad/speed factor, rango mayor
+                    vx: (Math.random()-0.5) * 0.8,
                 });
             }
         }
+
         function drawSnowflakes() {
             snowCtx.clearRect(0, 0, snowW, snowH);
-            snowCtx.globalAlpha = 0.94;
+            snowCtx.globalAlpha = 0.90;
             snowCtx.fillStyle = "#fff";
             for(const f of snowflakes) {
                 snowCtx.beginPath();
@@ -764,13 +784,14 @@
         }
         function updateSnowflakes() {
             for(const f of snowflakes) {
-                f.y += (1.25 + f.d);
+                f.y += (f.d + f.r * 0.13); // velocidad un poco proporcional al tamaño
                 f.x += f.vx;
-                if(f.y > snowH+5) {
-                    f.y = -2; f.x = Math.random()*snowW;
+                if(f.y > snowH + f.r) {
+                    f.y = -f.r;
+                    f.x = Math.random() * snowW;
                 }
-                if(f.x < -8) f.x = snowW+Math.random()*7;
-                if(f.x > snowW+8) f.x = -Math.random()*7;
+                if(f.x < -f.r) f.x = snowW + f.r;
+                if(f.x > snowW + f.r) f.x = -f.r;
             }
         }
         let snowAnimFrameId = null;
@@ -799,25 +820,20 @@
             else stopSnow();
             localStorage.setItem(LS_SNOW, active ? "true" : "false");
         }
-
-        // UI handler
         snowToggle.addEventListener('change', function() {
             setSnowActive(this.checked);
         });
-        // Responsive
         window.addEventListener('resize', function(){
             if(snowAnimationActive) {
                 resizeSnowCanvas();
                 createSnowflakes();
             }
         });
-
-        // Inicializa nieve si es predeterminada (checked)
         setTimeout(()=>{
             if(snowDefault) setSnowActive(true);
             else setSnowActive(false);
         }, 1);
-
     </script>
 </body>
 </html>
+
