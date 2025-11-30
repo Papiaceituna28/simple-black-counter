@@ -198,13 +198,17 @@
             font-size: 1rem;
             margin-bottom: 0.19em;
         }
-        .bg-options input[type="text"] {
-            border: 1px solid #555;
-            padding: 0.4em;
-            border-radius: 5px;
+        .bg-options input[type="text"],
+        .bg-options input[type="file"],
+        .bg-options input[type="checkbox"] {
             font-size: 1rem;
-            background: #181818;
-            color: #fff;
+        }
+        .bg-options input[type="checkbox"] {
+            accent-color: #f8f8b2;
+            width: 1.3em;
+            height: 1.3em;
+            vertical-align: middle;
+            margin-right: 0.3em;
         }
         .bg-options input[type="file"] {
             color: #fff;
@@ -296,6 +300,17 @@
             color: #bdbdbd;
             font-size: 0.85em;
         }
+        /* --- COPOS DE NIEVE --- */
+        #snow-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw !important;
+            height: 100vh !important;
+            pointer-events: none;
+            z-index: 20;
+            display: block;
+        }
         @media (max-width: 480px) {
             .countdown-container { max-width: 100vw; padding: 1vh 0.5vw; }
             .toggle-date-btn { right: 10px; bottom: 10px; width: 38px; height: 38px; font-size: 1rem; }
@@ -310,6 +325,9 @@
     </style>
 </head>
 <body>
+    <!-- Canvas para los copos de nieve -->
+    <canvas id="snow-canvas"></canvas>
+
     <div class="countdown-container">
         <div id="timePrefix" style="font-size: clamp(1.5rem, 7vw, 3.5rem); margin-bottom: 1.5rem; display: none;">Hace</div>
         <div class="countdown">
@@ -367,10 +385,10 @@
         <div class="bg-options hidden" id="bgOptions">
             <label style="margin-bottom: 0.4em;">Imágenes predeterminadas:</label>
             <div class="bg-previews-grid" id="bgPreviewsGrid">
-                <button class="bg-preview-btn" type="button" data-bg='pictures/1.webp' title="Fondo 1"><img src="pictures/1.webp" class="bg-preview-img" alt="1"/></button>
-                <button class="bg-preview-btn" type="button" data-bg='pictures/2.webp' title="Fondo 2"><img src="pictures/2.webp" class="bg-preview-img" alt="2"/></button>
-                <button class="bg-preview-btn" type="button" data-bg='pictures/3.webp' title="Fondo 3"><img src="pictures/3.webp" class="bg-preview-img" alt="3"/></button>
-                <button class="bg-preview-btn" type="button" data-bg='pictures/4.webp' title="Fondo 4"><img src="pictures/4.webp" class="bg-preview-img" alt="4"/></button>
+                <button class="bg-preview-btn" type="button" data-bg='https://raw.githubusercontent.com/Papiaceituna28/simple-black-counter/refs/heads/main/pictures/1.webp' title="Fondo 1"><img src="https://raw.githubusercontent.com/Papiaceituna28/simple-black-counter/refs/heads/main/pictures/1.webp" class="bg-preview-img" alt="1"/></button>
+                <button class="bg-preview-btn" type="button" data-bg='https://raw.githubusercontent.com/Papiaceituna28/simple-black-counter/refs/heads/main/pictures/2.webp' title="Fondo 2"><img src="https://raw.githubusercontent.com/Papiaceituna28/simple-black-counter/refs/heads/main/pictures/2.webp" class="bg-preview-img" alt="2"/></button>
+                <button class="bg-preview-btn" type="button" data-bg='https://raw.githubusercontent.com/Papiaceituna28/simple-black-counter/refs/heads/main/pictures/3.webp' title="Fondo 3"><img src="https://raw.githubusercontent.com/Papiaceituna28/simple-black-counter/refs/heads/main/pictures/3.webp" class="bg-preview-img" alt="3"/></button>
+                <button class="bg-preview-btn" type="button" data-bg='https://raw.githubusercontent.com/Papiaceituna28/simple-black-counter/refs/heads/main/pictures/4.webp' title="Fondo 4"><img src="https://raw.githubusercontent.com/Papiaceituna28/simple-black-counter/refs/heads/main/pictures/4.webp" class="bg-preview-img" alt="4"/></button>
                 <!-- Colores sólidos: botón más icono -->
                 <button class="bg-solid-btn" type="button" id="bgSolidBtn" title="Seleccionar color sólido">
                     <span class="color-sample" id="colorSample" style="background: #222;"></span>
@@ -381,6 +399,12 @@
             <input type="text" id="bgUrl" placeholder="https://ejemplo.com/fondo.jpg">
             <label for="bgFile" style="margin-top: 0.8em;">o desde tu equipo:</label>
             <input type="file" id="bgFile" accept="image/*">
+            <div style="margin-bottom:0.3em;margin-top:0.7em;">
+                <label style="font-size:0.98em;cursor:pointer;user-select:none;">
+                    <input type="checkbox" id="snowToggle" checked />
+                    Copos de nieve animados
+                </label>
+            </div>
             <div class="bg-btns">
                 <button id="applyBgBtn">Aplicar</button>
                 <button id="clearBgBtn" type="button">Quitar fondo</button>
@@ -395,6 +419,7 @@
         // ------ CONTADOR ------
         const LS_FINAL_TEXT = "customFinalText";
         const LS_TARGET_DATE = "customTargetDate";
+        const LS_SNOW = "enableSnow";
         const pageLoadDate = new Date();
         let storedDateValue = localStorage.getItem(LS_TARGET_DATE);
         let targetDate = storedDateValue ? new Date(storedDateValue) : new Date('2026-01-01T00:00:00');
@@ -512,10 +537,13 @@
                 document.body.style.backgroundImage = "none";
                 document.body.style.backgroundColor = bgData;
             } else if (bgData) {
-                document.body.style.backgroundImage =  bgData.startsWith('url(') || bgData.startsWith('linear-gradient(')
-                    ? bgData
-                    : 'url("' + bgData + '")';
-                document.body.style.backgroundColor = "#000"; // fallback
+                // Asegura formato correcto: 'url("...")'
+                if (bgData.startsWith('url(')) {
+                    document.body.style.backgroundImage = bgData;
+                } else {
+                    document.body.style.backgroundImage = 'url("' + bgData + '")';
+                }
+                document.body.style.backgroundColor = "#000";
             } else {
                 document.body.style.backgroundImage = '';
                 document.body.style.backgroundColor = "#000";
@@ -526,7 +554,12 @@
             const localBg = localStorage.getItem('customBackground');
             if (localBg) {
                 if (localBgType === 'file' || localBgType === 'url') {
-                    setBodyBackground(localBg);
+                    // Puede estar en 'url("...")' o solo archivo, ajusta:
+                    if (localBg.startsWith('url(')) {
+                        setBodyBackground(localBg);
+                    } else {
+                        setBodyBackground(localBg, "image");
+                    }
                 } else if (localBgType === 'solid') {
                     setBodyBackground(localBg, 'solid');
                     if (colorSample) colorSample.style.background = localBg;
@@ -536,53 +569,57 @@
                 setBodyBackground('');
             }
         }
+
+        // Restaura el fondo SOLO una vez al cargar
         restoreBackground();
+
         changeBgBtn.addEventListener('click', function(e) {
             bgOptions.classList.toggle('hidden');
             e.stopPropagation();
         });
         applyBgBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            // Revisa la preselección: imagen predeterminada, color sólido
+            // Si seleccionaste una de las imágenes predeterminadas:
             if (selectedPreviewBtn && selectedPreviewBtn.classList.contains('bg-preview-btn')) {
                 const src = selectedPreviewBtn.getAttribute('data-bg');
-                setBodyBackground(src);
+                const urlSrc = 'url("' + src + '")';
                 localStorage.setItem('customBackgroundType', 'url');
-                localStorage.setItem('customBackground', src);
-                // NO cerramos bgOptions aquí
+                localStorage.setItem('customBackground', urlSrc);
+                setBodyBackground(urlSrc);
                 return;
             }
-            // Si eligió color sólido
+            // Si elegiste color sólido
             if (selectedPreviewBtn && selectedPreviewBtn.classList.contains('bg-solid-btn')) {
-                setBodyBackground(selectedColor, "solid");
                 localStorage.setItem('customBackgroundType', 'solid');
                 localStorage.setItem('customBackground', selectedColor);
+                setBodyBackground(selectedColor, "solid");
                 return;
             }
             // Por URL:
             const url = bgUrlInput.value.trim();
             const file = bgFileInput.files[0];
             if (url.length > 6 && (url.startsWith('http://') || url.startsWith('https://'))) {
-                setBodyBackground(url);
+                const urlSrc = 'url("' + url + '")';
                 localStorage.setItem('customBackgroundType', 'url');
-                localStorage.setItem('customBackground', url);
+                localStorage.setItem('customBackground', urlSrc);
+                setBodyBackground(urlSrc);
                 bgFileInput.value = '';
-                // NO cerramos bgOptions aquí
                 return;
             }
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(ev) {
                     const dataUrl = ev.target.result;
-                    setBodyBackground(dataUrl);
+                    const urlSrc = 'url("' + dataUrl + '")';
                     localStorage.setItem('customBackgroundType', 'file');
-                    localStorage.setItem('customBackground', dataUrl);
+                    localStorage.setItem('customBackground', urlSrc);
+                    setBodyBackground(urlSrc);
                     bgUrlInput.value = '';
                 };
                 reader.readAsDataURL(file);
                 return;
             }
-            alert("Por favor, selecciona un fondo de la parte superior, un colór sólido, pon una url o selecciona una imagen del dispositivo.");
+            alert("Por favor, selecciona un fondo de la parte superior, un color sólido, pon una url o selecciona una imagen del dispositivo.");
         });
         clearBgBtn.addEventListener('click', function() {
             localStorage.removeItem('customBackground');
@@ -597,7 +634,6 @@
         // Selección mutua de preview
         bgPreviewsGrid.addEventListener('click', function(e) {
             let btn = e.target;
-            // Puede que clickés en la img, busca botón padre
             if (btn.classList && !btn.classList.contains('bg-preview-btn') && !btn.classList.contains('bg-solid-btn')) {
                 btn = btn.closest('.bg-preview-btn,.bg-solid-btn');
             }
@@ -605,23 +641,19 @@
             [...bgPreviewsGrid.querySelectorAll('.selected')].forEach(el=>el.classList.remove('selected'));
             btn.classList.add('selected');
             selectedPreviewBtn = btn;
-            // Si color sólido, marca color actualizado
             if (btn.classList.contains('bg-solid-btn')) {
                 colorSample.style.background = colorPicker.value;
             }
         });
-        // Maneja el colorPicker en color sólido
         colorPicker.addEventListener('input', function(e) {
             selectedColor = e.target.value;
             colorSample.style.background = selectedColor;
-            // Si está seleccionado colór sólido, actualiza en vivo
             if (selectedPreviewBtn && selectedPreviewBtn.classList.contains('bg-solid-btn')) {
-                setBodyBackground(selectedColor, "solid");
                 localStorage.setItem('customBackgroundType', 'solid');
                 localStorage.setItem('customBackground', selectedColor);
+                setBodyBackground(selectedColor, "solid");
             }
         });
-        // Elige colór sólido programático, selecciona su botón al cambiar color
         colorPicker.addEventListener('click', function(e) {
             if (!selectedPreviewBtn || !selectedPreviewBtn.classList.contains('bg-solid-btn')) {
                 [...bgPreviewsGrid.querySelectorAll('.selected')].forEach(el=>el.classList.remove('selected'));
@@ -630,16 +662,13 @@
             }
         });
 
-        // Seleccionar color sólido al clickear el botón (no el picker)
         bgSolidBtn.addEventListener('click', function(e) {
-            // Selecciona color actual
             [...bgPreviewsGrid.querySelectorAll('.selected')].forEach(el=>el.classList.remove('selected'));
             bgSolidBtn.classList.add('selected');
             selectedPreviewBtn = bgSolidBtn;
             colorPicker.focus();
         });
 
-        // Si elegimos miniatura, quita file/url/inputs para evitar mezcla
         bgPreviewsGrid.addEventListener('click', function(e) {
             let btn = e.target;
             if (btn.classList && !btn.classList.contains('bg-preview-btn') && !btn.classList.contains('bg-solid-btn')) {
@@ -654,7 +683,6 @@
             }
         });
 
-        // Si comienzas a llenar url o file, deselecciona miniaturas y color
         bgUrlInput.addEventListener('input', () => {
             [...bgPreviewsGrid.querySelectorAll('.selected')].forEach(el=>el.classList.remove('selected'));
             selectedPreviewBtn = null;
@@ -671,7 +699,6 @@
                 event.target !== changeBgBtn
             ) {
                 bgOptions.classList.add('hidden');
-                // Deselecciona el preview
                 [...bgPreviewsGrid.querySelectorAll('.selected')].forEach(el=>el.classList.remove('selected'));
                 selectedPreviewBtn = null;
             }
@@ -681,7 +708,6 @@
         bgUrlInput.addEventListener('input', ()=>bgFileInput.value='');
         bgFileInput.addEventListener('input', ()=>bgUrlInput.value='');
 
-        // Automatic restore de selección previa de color sólido
         if (localStorage.getItem('customBackgroundType') === 'solid') {
             bgSolidBtn.classList.add('selected');
             selectedPreviewBtn = bgSolidBtn;
@@ -691,6 +717,107 @@
                 selectedColor = colorPicker.value;
             }
         }
+
+
+        // =========== NIEVE ===============
+        // Sección de nieve, canvas en el fondo
+        const snowCanvas = document.getElementById('snow-canvas');
+        let snowAnimationActive = true; // Predeterminado activo
+        const snowDefault = (localStorage.getItem(LS_SNOW) === null) ? true : (localStorage.getItem(LS_SNOW) === "true");
+        let snowflakes = [];
+        let snowCtx = null;
+        let snowW = 0;
+        let snowH = 0;
+        // Checkbox UI
+        const snowToggle = document.getElementById('snowToggle');
+        snowToggle.checked = snowDefault;
+
+        function resizeSnowCanvas() {
+            snowW = window.innerWidth;
+            snowH = window.innerHeight;
+            snowCanvas.width = snowW;
+            snowCanvas.height = snowH;
+        }
+        function createSnowflakes() {
+            const N = Math.floor(snowW / 12); // number depends on screen size
+            snowflakes.length = 0;
+            for(let i = 0; i < N; ++i) {
+                snowflakes.push({
+                    x: Math.random() * snowW,
+                    y: Math.random() * snowH,
+                    r: Math.random() * 1.9 + 0.9, // radius
+                    d: Math.random() * 0.5 + 0.6, // density/speed factor
+                    vx: (Math.random()-0.5) * 0.55,
+                });
+            }
+        }
+        function drawSnowflakes() {
+            snowCtx.clearRect(0, 0, snowW, snowH);
+            snowCtx.globalAlpha = 0.94;
+            snowCtx.fillStyle = "#fff";
+            for(const f of snowflakes) {
+                snowCtx.beginPath();
+                snowCtx.arc(f.x, f.y, f.r, 0, Math.PI*2, true);
+                snowCtx.closePath();
+                snowCtx.fill();
+            }
+        }
+        function updateSnowflakes() {
+            for(const f of snowflakes) {
+                f.y += (1.25 + f.d);
+                f.x += f.vx;
+                if(f.y > snowH+5) {
+                    f.y = -2; f.x = Math.random()*snowW;
+                }
+                if(f.x < -8) f.x = snowW+Math.random()*7;
+                if(f.x > snowW+8) f.x = -Math.random()*7;
+            }
+        }
+        let snowAnimFrameId = null;
+        function snowLoop() {
+            updateSnowflakes();
+            drawSnowflakes();
+            snowAnimFrameId = requestAnimationFrame(snowLoop);
+        }
+        function startSnow() {
+            snowCanvas.style.display = "block";
+            resizeSnowCanvas();
+            createSnowflakes();
+            if(!snowCtx) snowCtx = snowCanvas.getContext('2d');
+            if(snowAnimFrameId) cancelAnimationFrame(snowAnimFrameId);
+            snowLoop();
+        }
+        function stopSnow() {
+            snowCanvas.style.display = "none";
+            if(snowAnimFrameId) cancelAnimationFrame(snowAnimFrameId);
+            snowAnimFrameId = null;
+            if(snowCtx) snowCtx.clearRect(0,0,snowW,snowH);
+        }
+        function setSnowActive(active) {
+            snowAnimationActive = active;
+            if (active) startSnow();
+            else stopSnow();
+            localStorage.setItem(LS_SNOW, active ? "true" : "false");
+        }
+
+        // UI handler
+        snowToggle.addEventListener('change', function() {
+            setSnowActive(this.checked);
+        });
+        // Responsive
+        window.addEventListener('resize', function(){
+            if(snowAnimationActive) {
+                resizeSnowCanvas();
+                createSnowflakes();
+            }
+        });
+
+        // Inicializa nieve si es predeterminada (checked)
+        setTimeout(()=>{
+            if(snowDefault) setSnowActive(true);
+            else setSnowActive(false);
+        }, 1);
+
     </script>
 </body>
 </html>
